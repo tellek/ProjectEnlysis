@@ -4,25 +4,34 @@ using UnityEngine;
 
 public class MagDrive : MonoBehaviour {
 
-	public float HoverHeight = 5f;
-	public float HoverForce = 11f;
-	public float MagPullStrength = 10f;
+	public float HoverHeight = 8f;
+	public float HoverForce = 300f;
+	public float MagPullStrength = 100f;
     public float RealignSpeed = 0.5f;
-	public float Stability = 0.3f;
-	public float StablizationSpeed = 2.0f;
-	public List<GameObject> Sensors;
+	public float Stability = 10f;
+	public float StablizationSpeed = 50f;
+	public List<GameObject> Sensors; //9
 
 	private Rigidbody rb;
 	private Vector3 magUp = new Vector3();
     private Vector3 magDown = new Vector3();
     private bool magLocked = true;
+    private FindTarget shipTargeting;
+    private bool hasTarget = false;
 
     void Awake () {
 		rb = GetComponent<Rigidbody>();
-	}
+        shipTargeting = gameObject.GetComponent<FindTarget>();
+        magUp = transform.up;
+        magDown = -transform.up;
+    }
 
+    private void Update()
+    {
+        hasTarget = shipTargeting.haveTarget;
+    }
 
-	void FixedUpdate () {
+    void FixedUpdate () {
         bool magDirectionset = false;
 
         Ray ray = new Ray(transform.position, -transform.up);
@@ -37,8 +46,6 @@ public class MagDrive : MonoBehaviour {
             Debug.DrawLine(this.transform.position, hit.point, Color.red);
             Debug.DrawRay(hit.point, reflectVec, Color.green);
 
-            //magUp = reflectVec;
-            //magDown = new Vector3(reflectVec.x * -1, reflectVec.y * -1, reflectVec.z * -1);
             SmoothChangeMagDirection(reflectVec);
             magDirectionset = true;
         }
@@ -57,8 +64,6 @@ public class MagDrive : MonoBehaviour {
                     Vector3 reflectVec = sensorHit.normal;
                     Debug.DrawRay(sensorHit.point, reflectVec, Color.green);
 
-                    //magUp = reflectVec;
-                    //magDown = new Vector3(reflectVec.x * -1, reflectVec.y * -1, reflectVec.z * -1);
                     SmoothChangeMagDirection(reflectVec);
                 }
                 magLocked = true;
@@ -66,12 +71,15 @@ public class MagDrive : MonoBehaviour {
             else magLocked = false;
         }
 
-        // Stabalization
-        Vector3 predictedUp = Quaternion.AngleAxis(
-			rb.angularVelocity.magnitude * Mathf.Rad2Deg * Stability / StablizationSpeed,
-			rb.angularVelocity) * transform.up;
-        Vector3 torqueVector = Vector3.Cross(predictedUp, magUp);
-        rb.AddTorque(torqueVector * StablizationSpeed * StablizationSpeed);
+        if (!hasTarget)
+        {
+            // Stabalization
+            Vector3 predictedUp = Quaternion.AngleAxis(
+                rb.angularVelocity.magnitude * Mathf.Rad2Deg * Stability / StablizationSpeed,
+                rb.angularVelocity) * transform.up;
+            Vector3 torqueVector = Vector3.Cross(predictedUp, magUp);
+            rb.AddTorque(torqueVector * StablizationSpeed * StablizationSpeed);
+        }
 
         if (magLocked)
         {
@@ -86,13 +94,7 @@ public class MagDrive : MonoBehaviour {
 
     void SmoothChangeMagDirection(Vector3 newDirection)
     {
-        magUp = Vector3.Slerp(magUp, newDirection, 10);
-        var negativeDirection = new Vector3(newDirection.x * -1, newDirection.y * -1, newDirection.z * -1);
-        magDown = Vector3.Slerp(magDown, negativeDirection, RealignSpeed * Time.deltaTime);
-    }
-
-    void EnterZeroGravity()
-    {
-        rb.
+        magUp = Vector3.Slerp(magUp, newDirection, RealignSpeed * Time.deltaTime);
+        magDown = Vector3.Slerp(magDown, -newDirection, RealignSpeed * Time.deltaTime);
     }
 }

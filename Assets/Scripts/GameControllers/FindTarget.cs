@@ -55,11 +55,11 @@ public class FindTarget : MonoBehaviour {
     {
         if (haveTarget)
         {
-            rb.freezeRotation = true;
+            //rb.freezeRotation = true;
             var toRotation = Quaternion.LookRotation(target.transform.position - transform.position);
             transform.rotation = Quaternion.Slerp(transform.rotation, toRotation, Time.deltaTime * RotateToTargetSpeed);
         }
-        else rb.freezeRotation = false;
+        //else rb.freezeRotation = false;
     }
 
     void OnGUI()

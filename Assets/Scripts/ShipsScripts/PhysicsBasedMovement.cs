@@ -4,30 +4,32 @@ using UnityEngine;
 
 public class PhysicsBasedMovement : MonoBehaviour {
 
-    public float forwardSpeed = 200f;
-    public float reverseSpeed = 200f;
-    public float strafeSpeed = 200f;
+    public float forwardSpeed = 100f;
+    public float reverseSpeed = 75f;
+    public float strafeSpeed = 100f;
     public float thrustMultiplier = 3.0f;
-    public float boostPower = 500f;
+    public float boostPower = 400f;
 
     private float horizontalAxis = 0;
     private float verticalAxis = 0;
     private Rigidbody rb;
     private bool hasTarget = false;
     private Vector3 currentVelocity = Vector3.zero;
+    private FindTarget targeting;
 
     bool doBoost = false;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        targeting = gameObject.GetComponent<FindTarget>();
     }
 
     void Update()
     {
         horizontalAxis = Input.GetAxis("Horizontal");
         verticalAxis = Input.GetAxis("Vertical");
-        hasTarget = gameObject.GetComponent<FindTarget>().haveTarget;
+        hasTarget = targeting.haveTarget;
         currentVelocity = rb.velocity;
 
         if (Input.GetKeyDown("space")) doBoost = true;

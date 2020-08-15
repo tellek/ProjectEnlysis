@@ -5,16 +5,16 @@ public class RotateWithMouse : MonoBehaviour
 {
     //public float speed;
     public float Acceleration = 2.0f;
-    public float MaxSpeed = 1.0f;
+    public float MaxSpeed = 1.5f;
 
     //public float speedV = 2.0f;
     public bool xAxis = true;
-    public bool yAxis = false;
+    public bool yAxis = true;
 
-    private float yaw = 0.0f;
-    private float pitch = 0.0f;
+    //private float yaw = 0.0f;
+    //private float pitch = 0.0f;
 
-    private float rotX = 0;
+    //private float rotX = 0;
     //private float rotY = 0;
 
     // Camera Rotation when not moving
@@ -23,11 +23,11 @@ public class RotateWithMouse : MonoBehaviour
     public Camera MainCamera;
 
     private bool hasTarget = false;
-    private bool wasStopped = false;
+    //private bool wasStopped = false;
 
     private Rigidbody rb;
     private Vector2 mouseInput;
-    public Vector3 Tensor;
+    public Vector3 Tensor; // 500, 500, 500
 
     void Start()
     {

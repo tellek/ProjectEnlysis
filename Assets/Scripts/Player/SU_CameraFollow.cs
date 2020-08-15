@@ -37,22 +37,22 @@ public class SU_CameraFollow : MonoBehaviour
     // updated in the FixedUpdate() function.
 
     public enum UpdateMode { FIXED_UPDATE, UPDATE, LATE_UPDATE }
-    public UpdateMode updateMode = UpdateMode.FIXED_UPDATE;
+    public UpdateMode updateMode = UpdateMode.LATE_UPDATE;
 
     // Select the chase mode (chase behind target or moving spectator)
     // CHASE = smooth chase behind target at distance and height
     // SPECTATOR = smooth look at target from a chasing spectator position
     public enum FollowMode { CHASE, SPECTATOR, ORBIT }
-    public FollowMode followMode = FollowMode.SPECTATOR;
+    public FollowMode followMode = FollowMode.CHASE;
 
     // Target to follow
     public Transform target;
 
     // Distance to follow from (this is the minimum distance, 
     // depending on damping the distance will increase at speed)
-    public float distance = 60.0f;
+    public float distance = 18.6f;
     // Height for chase mode camera
-    public float chaseHeight = 15.0f;
+    public float chaseHeight = 7.03f;
 
     // Follow (movement) damping. Lower value = smoother
     public float followDamping = 0.3f;
