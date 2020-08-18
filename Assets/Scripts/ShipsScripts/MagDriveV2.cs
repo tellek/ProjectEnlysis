@@ -14,7 +14,8 @@ public class MagDriveV2 : MonoBehaviour
     public float SensorRange = 20f;
     public float Stability = 10f;
     public float StablizationSpeed = 50f;
-
+    public float MaxCorrectionDifference = 50f;
+    public float MaxSurfaceSeekDistance = 100f;
 
     private int moveDirection = 0;
 
@@ -22,6 +23,7 @@ public class MagDriveV2 : MonoBehaviour
     private Rigidbody rb;
     private Vector3 magUp = new Vector3();
     private Vector3 magDown = new Vector3();
+    private Vector3 OldMagDown = new Vector3();
     private bool isMagLocked = false;
 
     private bool wDown = false;
@@ -33,7 +35,6 @@ public class MagDriveV2 : MonoBehaviour
     
     private bool hasTarget = false;
     private bool magDirectionset = false;
-
     private Dictionary<string, GameObject> sensors = new Dictionary<string, GameObject>();
 
     void Awake()
@@ -58,11 +59,10 @@ public class MagDriveV2 : MonoBehaviour
 
     void FixedUpdate()
     {
-        //ManageHovering();
         ManageSensorArray();
         if (!hasTarget) ManageStabalization();
         ManageMagDrivePull();
-
+        //KeepShipCloseToSurface();
     }
 
     private void LateUpdate()
@@ -70,24 +70,25 @@ public class MagDriveV2 : MonoBehaviour
         SetMoveDirection();
     }
 
-    void ManageHovering()
+    void KeepShipCloseToSurface()
     {
-        Ray ray = new Ray(transform.position, -transform.up);
-        if (Physics.Raycast(ray, out RaycastHit hit, HoverHeight))
+        if (true)
         {
-            Vector3 reflectVec = hit.normal; // Straight out from the hit face.
-            float proportionalHeight = (HoverHeight - hit.distance) / HoverHeight;
-            Vector3 actualForce = transform.up * proportionalHeight * HoverForce;
-
-            rb.AddForce(actualForce, ForceMode.Acceleration);
-
-            Debug.DrawLine(transform.position, hit.point, Color.cyan);
-            Debug.DrawRay(hit.point, reflectVec, Color.green, 5);
-
-            SmoothChangeMagDirection(reflectVec);
-            isMagLocked = true;
+            Ray ray = new Ray(transform.position, -transform.up);
+            RaycastHit hit;
+            if (Physics.Raycast(ray, out hit, MaxSurfaceSeekDistance))
+            {
+                Debug.DrawRay(hit.point, hit.normal, Color.cyan);
+                if (hit.distance > (HoverHeight + MaxCorrectionDifference))
+                {
+                    rb.AddForce(magDown * 10, ForceMode.Acceleration);
+                }
+                else if (hit.distance < (HoverHeight - MaxCorrectionDifference))
+                {
+                    rb.AddForce(magUp * 10, ForceMode.Acceleration);
+                }
+            }
         }
-        else magLocked = false;
     }
 
     void ManageSensorArray()
@@ -105,7 +106,7 @@ public class MagDriveV2 : MonoBehaviour
             var sensorRay = new Ray(sensor.Value.transform.position, direction);
             //Vector3 dir = (sensor.Value.transform.position - transform.position).normalized;
             //var sensorRay = new Ray(transform.position, dir);
-            Debug.DrawLine(sensorRay.origin, sensorRay.GetPoint(20), Color.red);
+            Debug.DrawLine(sensorRay.origin, sensorRay.GetPoint(SensorRange), Color.red);
 
             RaycastHit sensorHit;
             if (Physics.Raycast(sensorRay, out sensorHit, SensorRange))
@@ -114,6 +115,7 @@ public class MagDriveV2 : MonoBehaviour
                 Vector3 reflectVec = sensorHit.normal;
 
                 float proportionalHeight = (HoverHeight - sensorHit.distance) / HoverHeight;
+                Debug.Log(proportionalHeight);
                 Vector3 actualForce = transform.up * proportionalHeight * HoverForce;
 
                 rb.AddForce(actualForce, ForceMode.Acceleration);
@@ -139,7 +141,7 @@ public class MagDriveV2 : MonoBehaviour
 
     void ManageMagDrivePull()
     {
-        if (!magLocked)
+        if (false)
         {
             // Convert vector to local space.
             var locVel = transform.InverseTransformDirection(rb.velocity);
@@ -156,14 +158,21 @@ public class MagDriveV2 : MonoBehaviour
             magDown.z * MagPullStrength,
             ForceMode.Acceleration);
         }
+        OldMagDown = magDown;
+    }
+
+    bool WasLargeEnoughChange(Vector3 from, Vector3 to)
+    {
+        if ((from.x - to.x) >= MaxCorrectionDifference) return true;
+        if ((from.y - to.y) >= MaxCorrectionDifference) return true;
+        if ((from.z - to.z) >= MaxCorrectionDifference) return true;
+        return false;
     }
 
     void SmoothChangeMagDirection(Vector3 newDirection)
     {
         magUp = Vector3.Slerp(magUp, newDirection, RealignSpeed * Time.deltaTime);
         magDown = Vector3.Slerp(magDown, -newDirection, RealignSpeed * Time.deltaTime);
-
-        Debug.Log(magDown.ToString());
     }
 
     public void SetMoveDirection()
