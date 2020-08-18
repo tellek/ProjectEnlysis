@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MagDrive : MonoBehaviour {
+public class MagDriveV1 : MonoBehaviour {
 
 	public float HoverHeight = 8f;
 	public float HoverForce = 300f;
