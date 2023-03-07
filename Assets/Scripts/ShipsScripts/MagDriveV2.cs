@@ -104,24 +104,24 @@ public class MagDriveV2 : MonoBehaviour
 
             Vector3 direction = (sensors[$"{name}_To_{num}"].transform.position - sensor.Value.transform.position).normalized;
             var sensorRay = new Ray(sensor.Value.transform.position, direction);
-            //Vector3 dir = (sensor.Value.transform.position - transform.position).normalized;
-            //var sensorRay = new Ray(transform.position, dir);
             Debug.DrawLine(sensorRay.origin, sensorRay.GetPoint(SensorRange), Color.red);
 
             RaycastHit sensorHit;
             if (Physics.Raycast(sensorRay, out sensorHit, SensorRange))
             {
-                magLocked = true;
-                Vector3 reflectVec = sensorHit.normal;
+                if (sensorHit.transform.tag == "MagSurface")
+                {
+                    magLocked = true;
+                    Vector3 reflectVec = sensorHit.normal;
 
-                float proportionalHeight = (HoverHeight - sensorHit.distance) / HoverHeight;
-                Debug.Log(proportionalHeight);
-                Vector3 actualForce = transform.up * proportionalHeight * HoverForce;
+                    float proportionalHeight = (HoverHeight - sensorHit.distance) / HoverHeight;
+                    Vector3 actualForce = transform.up * proportionalHeight * HoverForce;
 
-                rb.AddForce(actualForce, ForceMode.Acceleration);
+                    rb.AddForce(actualForce, ForceMode.Acceleration);
 
-                Debug.DrawRay(sensorHit.point, reflectVec, Color.green);
-                SmoothChangeMagDirection(reflectVec);
+                    Debug.DrawRay(sensorHit.point, reflectVec, Color.green);
+                    SmoothChangeMagDirection(reflectVec);
+                }
             }
             else
             {

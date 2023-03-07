@@ -6,6 +6,8 @@ TagManager:
   tags:
   - Enemy
   - Sensor
+  - MagSurface
+  - TempWall
   layers:
   - Default
   - TransparentFX
